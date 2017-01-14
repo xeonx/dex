@@ -40,6 +40,7 @@ More docs for running dex as a Kubernetes authenticator can be found [here](Docu
   * [SAML 2.0 (experimental)](Documentation/saml-connector.md)
 * Client libraries
   * [Go][go-oidc]
+  * [Javascript](Documentation/oidc-client-js.md)
 
 ## Getting help
 
