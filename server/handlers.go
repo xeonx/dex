@@ -104,7 +104,7 @@ type discovery struct {
 	Claims        []string `json:"claims_supported"`
 }
 
-func (s *Server) discoveryHandler() (http.Handler, error) {
+func (s *Server) discoveryHandler() (http.HandlerFunc, error) {
 	d := discovery{
 		Issuer:      s.issuerURL.String(),
 		Auth:        s.absURL("/auth"),
@@ -130,18 +130,19 @@ func (s *Server) discoveryHandler() (http.Handler, error) {
 		return nil, fmt.Errorf("failed to marshal discovery data: %v", err)
 	}
 
-	var discoveryHandler http.Handler
-	discoveryHandler = http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Content-Type", "application/json")
 		w.Header().Set("Content-Length", strconv.Itoa(len(data)))
 		w.Write(data)
-	})
-	if len(s.discoveryAllowedOrigins) > 0 {
-		corsOption := handlers.AllowedOrigins(s.discoveryAllowedOrigins)
-		discoveryHandler = handlers.CORS(corsOption)(discoveryHandler)
-	}
+	}), nil
+}
 
-	return discoveryHandler, nil
+func (s *Server) setupCORS(handler http.Handler) http.Handler {
+	if len(s.allowedOrigins) > 0 {
+		corsOption := handlers.AllowedOrigins(s.allowedOrigins)
+		handler = handlers.CORS(corsOption)(handler)
+	}
+	return handler
 }
 
 // handleAuthorization handles the OAuth2 auth endpoint.

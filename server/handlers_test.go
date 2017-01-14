@@ -43,14 +43,16 @@ func TestDiscoveryHandlerCORS(t *testing.T) {
 	for _, testcase := range discoveryHandlerCORSTests {
 
 		httpServer, server := newTestServer(ctx, t, func(c *Config) {
-			c.DiscoveryAllowedOrigins = testcase.DiscoveryAllowedOrigins
+			c.AllowedOrigins = testcase.DiscoveryAllowedOrigins
 		})
 		defer httpServer.Close()
 
+		var discoveryHandler http.Handler
 		discoveryHandler, err := server.discoveryHandler()
 		if err != nil {
 			t.Fatalf("failed to get discovery handler: %v", err)
 		}
+		discoveryHandler = server.setupCORS(discoveryHandler)
 
 		//Perform preflight request
 		rrPreflight := httptest.NewRecorder()
